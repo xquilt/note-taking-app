@@ -8,3 +8,8 @@ noteObject = {
 
 console.log(noteObject[1])
 
+commandLineArgument = process.argv.slice(2)
+
+noteObject[3] = commandLineArgument[0]
+
+console.log(noteObject)
