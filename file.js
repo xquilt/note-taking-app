@@ -7,3 +7,4 @@ noteObject = {
 }
 
 console.log(noteObject[1])
+
