@@ -1,11 +1,6 @@
--application features
-    command line based tool (CLI tool)
-    written entirely in vanilla javascript
-    should be visually pleasing by the end of the project
-
 Description
 
-* The command line note taking app should support
+*   command line based tool (CLI tool) written entirely in vanilla javascript should be visually pleasing by the end of the project
 
 TODO
     
