@@ -1,5 +1,14 @@
-This is a new project where i'm planning on making a new timer application from scratch .
 -application features
-    -command line based tool (cli tool)
-    -written entirely in vaniall javascript
-    -should be visually pleasing by the end of the project
+    command line based tool (CLI tool)
+    written entirely in vanilla javascript
+    should be visually pleasing by the end of the project
+
+Description
+
+* The command line note taking app should support
+
+TODO
+    
+- [ ] Adding a database for saving the notes of the user , with some predefined place for saving these notes within the file system .
+- [ ] The command line arguments would work just fine .
+- [ ] It should support an additional interactive UI at a more advanced development phrase later on .
