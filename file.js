@@ -39,7 +39,7 @@ function listUsers(){
     let usersList = Object.keys(student)
     console.log("The list of users ")
     for (let i = 0 ; i < usersList.length ; i++ ){
-        console.log(student[usersList[i]])
+        console.log(student[usersList[i]]['name'])
     }
 }
 listUsers()
