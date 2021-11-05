@@ -1,3 +1,4 @@
+const fs = require("fs")
 const yargs = require("yargs")
 
 noteObject = {
@@ -6,11 +7,11 @@ noteObject = {
 }
 
 const argv = yargs
-    .command('lyr', 'Tells whether an year is leap year or not', {
-        year: {
-            description: 'the year to check for',
-            alias: 'y',
-            type: 'number',
+    .command ('list' , "Prints out the notes associated with the current user (if no users were explicitly specificed) " , {
+        user: {
+            description: 'Name of a registered user',
+            alias : "l",
+            type: "string"
         }
     })
     .option('time', {
@@ -26,13 +27,19 @@ if (argv.time) {
     console.log('The current time is: ', new Date().toLocaleTimeString());
 }
 
-if (argv._.includes('lyr')) {
-    const year = argv.year || new Date().getFullYear();
-    if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)) {
-        console.log(`${year} is a Leap Year`);
-    } else {
-        console.log(`${year} is NOT a Leap Year`);
-    }
+if (argv.note) {
+    console.log("The current note is " , argv.note)
 }
 
-console.log(argv);
+let rawData = fs.readFileSync("./file.json")
+let student = JSON.parse(rawData)
+console.log(student)
+
+function listUsers(){
+    let usersList = Object.keys(student)
+    console.log("The list of users ")
+    for (let i = 1 ; i <= usersList.length ; i++ ){
+        console.log(student[i.toString()]["name"])
+    }
+}
+listUsers()
