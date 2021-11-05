@@ -10,13 +10,13 @@ const argv = yargs
     .command ('list' , "Prints out the notes associated with the current user (if no users were explicitly specificed) " , {
         user: {
             description: 'Name of a registered user',
-            alias : "l",
-            type: "string"
+            alias : "u",
+            type : "string"
         }
     })
     .option('time', {
-        alias: 't',
         description: 'Tell the present Time',
+        alias: 't',
         type: 'boolean',
     })
     .help()
@@ -33,13 +33,25 @@ if (argv.note) {
 
 let rawData = fs.readFileSync("./file.json")
 let student = JSON.parse(rawData)
-console.log(student)
 
-function listUsers(){
-    let usersList = Object.keys(student)
-    console.log("The list of users ")
-    for (let i = 0 ; i < usersList.length ; i++ ){
-        console.log(student[usersList[i]]['name'])
+if (argv._.includes("list")){
+    let userName = argv.user
+    if (userName != undefined){
+        if (student.hasOwnProperty(userName)) {
+            console.log("The notes for " , userName)
+            let userNotes = student[userName]['notes']
+            for (let i = 0 ; i < userNotes.length ; i++){
+                console.log(userNotes[i])
+            }
+        }else{
+            console.log("Input a valid username!")
+        }
+    }else {
+        console.log("The list of users ")
+        let usersList = Object.keys(student)
+        for (let i = 0 ; i < usersList.length ; i++ ){
+            console.log(usersList[i])
+            //console.log(student[usersList[i]]['name'])
+        }
     }
 }
-listUsers()
