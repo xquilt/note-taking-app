@@ -34,9 +34,18 @@ if (argv.note) {
 let rawData = fs.readFileSync("./file.json")
 let student = JSON.parse(rawData)
 
+//Check if an option is passed or not
+function optionAddCheck(option){
+    if (option != undefined) {
+        return true
+    }else {
+        return false
+    }
+}
+
 if (argv._.includes("list")){
     let userName = argv.user
-    if (userName != undefined){
+    if (optionAddCheck(userName)) {
         if (student.hasOwnProperty(userName)) {
             console.log("The notes for " , userName)
             let userNotes = student[userName]['notes']
