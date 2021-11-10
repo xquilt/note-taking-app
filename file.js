@@ -65,24 +65,16 @@ if (argv._.includes("list")){
     }
 }
 
+
+let newRawData = fs.readFileSync("./newUserFile.json")
+let newParsedData = JSON.parse(newRawData)
+
 if (argv._.includes("add")) {
     if (argv.note != undefined) {
-        console.log(argv.note)
+        newParsedData.hobbies.push(argv.note)
+        let newUserData = JSON.stringify(newParsedData , null , 2)
+        fs.writeFileSync('newUserFile.json', newUserData)
     }else {
         console.log("Please provide a valid note!")
     }
 }
-
-
-//let newUser = {
-//    "name":"mostafa",
-//    "age":19,
-//    "hobbies":[
-//        "gaming",
-//        "coding",
-//        "doing math"
-//    ]
-//}
-//
-//let newUserData = JSON.stringify(newUser , null , 2)
-//fs.writeFileSync('newUserFile.json', newUserData)
