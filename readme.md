@@ -9,6 +9,5 @@ TODO
 - [ ] The command line arguments would work just fine .
 - [ ] It should support an additional interactive UI at a more advanced development phrase later on .
     -[ ] The interactive UI should contain a plethora of functionalities .
-
-            -[ ] hierarchical structure of notes within categories . 
-            -[ ] interactive usage with vi movement.
+        -[ ] hierarchical structure of notes within categories . 
+        -[ ] interactive usage with vi movement.
