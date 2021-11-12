@@ -65,16 +65,26 @@ if (argv._.includes("list")){
     }
 }
 
+function accessData(fileName){
+    let newRawData = fs.readFileSync(fileName)
+    let newParsedData = JSON.parse(newRawData)
+    return (newParsedData)
+}
 
-let newRawData = fs.readFileSync("./newUserFile.json")
-let newParsedData = JSON.parse(newRawData)
+function writeData(fileName , data){
+    data = JSON.stringify(data , null , 2)
+    fs.writeFileSync( fileName , data )
+}
 
 if (argv._.includes("add")) {
     if (argv.note != undefined) {
+        let newParsedData = accessData("newUserFile.json")
         newParsedData.hobbies.push(argv.note)
-        let newUserData = JSON.stringify(newParsedData , null , 2)
-        fs.writeFileSync('newUserFile.json', newUserData)
+        writeData('newUserFile.json' , newParsedData)
+        //just one liner printing statement for debugging
+        console.log(newParsedData)
     }else {
         console.log("Please provide a valid note!")
     }
 }
+
