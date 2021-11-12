@@ -41,7 +41,7 @@ var box = blessed.box({
 // Append our box to the screen.
 screen.append(box);
 
-let newList = ["having a bath", "playing games with fellow pals" , "doing my homework"]
+let newList = ["having a bath", "playing games with fellow pals" , "doing my homework" , "just brand new item" , 'another brand new item' , 'a journey within new realms of abstract thoughts' , "having a bath", "playing games with fellow pals" , "doing my homework" , "just brand new item" , 'another brand new item' , 'a journey within new realms of abstract thoughts']
 
 let brandNewList = blessed.list({
     parent: screen,
@@ -52,6 +52,7 @@ let brandNewList = blessed.list({
     height: '25%',
     keys: true,
     vi : true,
+    mouse : true,
     items : newList,
     border: {
         type: 'line',
