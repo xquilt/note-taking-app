@@ -31,8 +31,11 @@ if (argv.time) {
     console.log('The current time is: ', new Date().toLocaleTimeString());
 }
 
-let rawData = fs.readFileSync("./file.json")
-let parsedData = JSON.parse(rawData)
+function accessData(fileName){
+    let newRawData = fs.readFileSync(fileName)
+    let newParsedData = JSON.parse(newRawData)
+    return (newParsedData)
+}
 
 //Check if an option is passed or not
 function optionCheck(option){
@@ -46,6 +49,7 @@ function optionCheck(option){
 if (argv._.includes("list")){
     let userName = argv.user
     if (optionCheck(userName)) {
+        let parsedData = accessData("file.json")
         if (parsedData.hasOwnProperty(userName)) {
             console.log("The notes for " , userName)
             let userNotes = parsedData[userName]['notes']
@@ -63,12 +67,6 @@ if (argv._.includes("list")){
             //console.log(parsedData[usersList[i]]['name'])
         }
     }
-}
-
-function accessData(fileName){
-    let newRawData = fs.readFileSync(fileName)
-    let newParsedData = JSON.parse(newRawData)
-    return (newParsedData)
 }
 
 function writeData(fileName , data){
