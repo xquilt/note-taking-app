@@ -21,13 +21,13 @@ var box = blessed.box({
     left: 'center',
     width : "100%",  
     height: "100%",
-    content: 'Hello {bold}world{/bold}!',
+    content: '{center}Elicit {bold}world{/bold}!{/center}',
     tags: true,
     border: {
         type: 'line'
     },
     style: {
-        fg: 'white',
+        fg: 'yellow',
         bg: 'magenta',
         border: {
           fg: '#f0f0f0'
@@ -37,9 +37,6 @@ var box = blessed.box({
         }
     }
 });
-
-// Append our box to the screen.
-screen.append(box);
 
 let newList = ["having a bath", "playing games with fellow pals" , "doing my homework" , "just brand new item" , 'another brand new item' , 'a journey within new realms of abstract thoughts' , "having a bath", "playing games with fellow pals" , "doing my homework" , "just brand new item" , 'another brand new item' , 'a journey within new realms of abstract thoughts']
 
@@ -54,6 +51,7 @@ let brandNewList = blessed.list({
     vi : true,
     mouse : true,
     items : newList,
+    fuzzyFind : "string",
     border: {
         type: 'line',
     },
@@ -64,9 +62,9 @@ let brandNewList = blessed.list({
            fg: 'gray',
            bold: true,
         },
-        selected: {
+        selected : {
             bg: 'black',
-            fg: 'white',
+            fg : "yellow"
         },
         item: {
             bg: 'black',
@@ -90,27 +88,125 @@ let brandNewList = blessed.list({
     },
 })
 
-screen.append(brandNewList)
+//The UI elements for editing a not
 
-// Add a png icon to the box
-var icon = blessed.image({
-  parent: box,
-  top: 0,
-  left: 0,
-  type: 'overlay',
-  width: 'shrink',
-  height: 'shrink',
-  file: __dirname + '/my-program-icon.png',
-  search: false
-});
-
-box.key("enter", function (){
-    box.setContent ('{center}{blue-fg}Youve pressed Enter.{/blue-fg}{/center}')
-    for (let i =0 ; i < newList.length ; i++){
-        box.insertLine(i+1 , newList[i])
+let noteForm = blessed.form ({
+    //parent : screen,
+    //top : 1,
+    //top : "10%",
+    //left : '10',
+    //right : '80%',
+    //height : '80%',
+    //key : true,
+    //vi : true,
+    //shadow : true,
+    //border : {
+        //type : 'line',
+        //fg : 'yellow',
+        //bg : "white"
+    //},
+    //style : {
+        //label : {
+            //fg : "white",
+            //bold : true
+        //}
+    //}
+    //    
+    parent: screen,
+    top: '10%',
+    left: '10%',
+    width: '80%',
+    height: '40%',
+    keys: true,
+    vi: true,
+    shadow: true,
+    padding: {
+        top: 1,
+        left: 1,
+        right: 1,
+        bottom: 0,
+    },
+    border: {
+        type: 'line',
+    },
+    style: {
+        label: {
+            fg: 'green',
+            left: 'center',
+            bold: true,
+        },
+        border: {
+            fg: 'green',
+        }
     }
+})
+
+let titleBox = blessed.textbox({
+    parent: noteForm,
+    height: 3,
+    top : 0,
+    keys: true,
+    vi: true,
+    inputOnFocus: true,
+    border: {
+        type: 'line',
+    },
+    label: ` Content `,
+    style: {
+        label: {
+            fg: 'green',
+        },
+        border: {
+            fg: 'green',
+        },
+        focus: {
+            label: {
+                bold: true,
+            },
+            border: {
+                bold: true,
+            }
+        }
+    },
+})
+
+let descrBox = blessed.textbox({
+    parent : noteForm,
+    top : 1,
+    border : {
+        type : "line"
+    },
+    inputOnFocus : true,
+    label : ' description ',
+    style : {
+        label : {
+            fg : 'red',
+        },
+        border : {
+            fg : "yellow"
+        }
+    }
+})
+
+brandNewList.key ("enter",function(){
+    noteForm.show()
+    descrBox.setValue(this.ritems[this.selected])
+    descrBox.focus()
     screen.render()
 })
+
+descrBox.key ("enter" , function(){
+    noteForm.hide()
+    screen.render()
+})
+
+//box.key("enter", function (){
+    //box.setContent ('{center}{blue-fg}Youve pressed Enter.{/blue-fg}{/center}')
+    //for (let i =0 ; i < newList.length ; i++){
+        //box.insertLine(i+1 , newList[i])
+    //}
+    //screen.render()
+//})
 
 // Quit on Escape, q, or Control-C.
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
@@ -121,8 +217,13 @@ screen.key("Q", function(){
     this.destroy()
 })
 
-// Focus our element.
-//box.focus();
+// Append our box to the screen.
+screen.append(box);
+
+screen.append(brandNewList)
+
+screen.append(noteForm)
+noteForm.hide()
 
 brandNewList.focus()
 
