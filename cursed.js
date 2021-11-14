@@ -1,8 +1,18 @@
-var blessed = require('blessed');
+let blessed = require('blessed');
+let fuzzysort = require ('fuzzysort')
+
+function neoGo(string , list){
+    let matchedItems = fuzzysort.go(string , list)
+    let neoMatchedItems = []
+    for (let i=0 ; i < matchedItems.length ; i++) {
+        neoMatchedItems.push(Object.values(matchedItems[i])[0])
+    }
+    return (neoMatchedItems)
+}
 
 // Create a screen object.
 let screen = blessed.screen({
-    smartCSR: true,
+    smartCSR : true,
     title : "Elicit Notes"
 });
 
@@ -15,61 +25,87 @@ let screen = blessed.screen({
 //});
 
 
-// Create a box perfectly centered horizontally and vertically.
+// The main parent box
 var box = blessed.box({
     top: 'center',
     left: 'center',
     width : "100%",  
     height: "100%",
-    content: '{center}Elicit {bold}world{/bold}!{/center}',
     tags: true,
-    border: {
-        type: 'line'
+    border : {
+        type : 'line'
     },
     style: {
-        fg: 'yellow',
-        bg: 'magenta',
-        border: {
-          fg: '#f0f0f0'
+        fg : "blue",
+        bg : "yellow",
+        border : {
+            fg : "blue"
         },
-        hover: {
-          bg: 'green'
+        hover : {
+            fg : "red"
         }
-    }
+    },
 });
 
-let newList = ["having a bath", "playing games with fellow pals" , "doing my homework" , "just brand new item" , 'another brand new item' , 'a journey within new realms of abstract thoughts' , "having a bath", "playing games with fellow pals" , "doing my homework" , "just brand new item" , 'another brand new item' , 'a journey within new realms of abstract thoughts']
+
+let projectItems = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
+
+let projectList = blessed.list({
+    parent : screen,
+    shadow : false,
+    height : '100%',
+    width : '20%',
+    keys : true,
+    vi : true,
+    items : projectItems,
+    border : {
+        type : 'line'
+    },
+    style : {
+        fg : 'white',
+        bg : '#15151b',
+        border : {
+            fg: "blue"
+        },
+        selected : {
+            fg : 'yellow',
+            bg : 'cyan',
+            width : '10%'
+        }
+    }
+})
+
+let newList = ['having a bath', 'playing games with fellow pals' , 'doing my homework' , 'just brand new item']
 
 let brandNewList = blessed.list({
     parent: screen,
-    shadow: true,
-    left: '25%',
-    width: '50%',
-    top: '35%',
-    height: '25%',
+    shadow : true,
+    left : '20%',
+    height : '100%',
+    width : '80%',
     keys: true,
     vi : true,
     mouse : true,
     items : newList,
-    fuzzyFind : "string",
     border: {
         type: 'line',
     },
     label: `[ Notes ]`,
     scrollbar: true,
     style: {
-        label: {
-           fg: 'gray',
-           bold: true,
+        bg : '#0b0b11',
+        label : {
+            fg : 'white',
+            bold : true
         },
         selected : {
             bg: 'black',
             fg : "yellow"
         },
-        item: {
-            bg: 'black',
-            height: '100',
-        },
+        //item: {
+            //bg: 'black',
+            //height: '100',
+        //},
         focus: {
             selected: {
                 bg: 'blue',
@@ -143,15 +179,15 @@ let noteForm = blessed.form ({
 
 let titleBox = blessed.textbox({
     parent: noteForm,
-    height: 3,
-    top : 0,
-    keys: true,
-    vi: true,
     inputOnFocus: true,
+    keys : true,
+    vi : true,
     border: {
         type: 'line',
     },
     label: ` Content `,
+    clickable : true,
+    hover : true,
     style: {
         label: {
             fg: 'green',
@@ -169,6 +205,34 @@ let titleBox = blessed.textbox({
         }
     },
 })
+
+projectList.key ('/' , function(){
+    titleBox.top = '40%'
+    titleBox.height = '6%',
+    titleBox.width = '40%',
+    titleBox.left = 'center'
+    screen.append(titleBox)
+    titleBox.show()
+    titleBox.focus()
+})
+
+titleBox.on('update', function(){
+    brandNewList.clearItems()
+    brandNewList.setItems(neoGo(titleBox.value, newList))
+    if (titleBox.value.length == 0 ){
+        brandNewList.setItems(newList)
+        screen.render()
+    }
+})
+
+titleBox.key ('enter', function() {
+    titleBox.clearValue()
+    brandNewList.setItems(newList)
+    titleBox.hide()
+    screen.render()
+})
+
+
 
 let descrBox = blessed.textbox({
     parent : noteForm,
@@ -201,17 +265,9 @@ descrBox.key ("enter" , function(){
     screen.render()
 })
 
-//box.key("enter", function (){
-    //box.setContent ('{center}{blue-fg}Youve pressed Enter.{/blue-fg}{/center}')
-    //for (let i =0 ; i < newList.length ; i++){
-        //box.insertLine(i+1 , newList[i])
-    //}
-    //screen.render()
-//})
-
 // Quit on Escape, q, or Control-C.
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
-  return process.exit(0);
+    return process.exit(0);
 });
 
 screen.key("Q", function(){
@@ -226,7 +282,12 @@ screen.append(brandNewList)
 screen.append(noteForm)
 noteForm.hide()
 
-brandNewList.focus()
+screen.append(projectList)
+
+//brandNewList.focus()
+
+projectList.focus()
 
 // Render the screen.
-screen.render();
+screen.render()
+
