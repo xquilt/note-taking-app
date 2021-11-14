@@ -259,6 +259,7 @@ brandNewList.key ("enter",function(){
     screen.render()
 })
 
+
 descrBox.key ("enter" , function(){
     brandNewList.setItem(brandNewList.selected , descrBox.content)
     noteForm.hide()
