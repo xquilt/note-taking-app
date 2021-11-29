@@ -11,3 +11,5 @@ TODO
     - [ ] The interactive UI should contain a plethora of functionalities .
         - [ ] hierarchical structure of notes within categories . 
         - [ ] interactive usage with vi movement.
+        - [ ] /<interactive/> fuzzy searching of the items of the current pane .
+        - [ ] Showing a status bar with plethora of useful reachable bits of stats .
