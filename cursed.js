@@ -34,14 +34,12 @@ var box = blessed.box({
     height: "100%",
     tags: true,
     border : {
-        type : 'line'
+        type : 'line',
+        fg : "blue"
     },
     style: {
         fg : "blue",
         bg : "yellow",
-        border : {
-            fg : "blue"
-        },
         hover : {
             fg : "red"
         }
@@ -54,12 +52,24 @@ let paddingObjectProperties = {
     right : 1,
     top : 1
 }
+let focusObjectProperties = {
+    selected: {
+        bg: 'blue',
+        bold: true
+    },
+    border: {
+        fg: 'cyan'
+    },
+    label: {
+        fg: 'cyan'
+    }
+}
 
-//let projectItems = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
-let projectItems = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing',"Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
+//let noteGroupList = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
+let noteGroupList = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing',"Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
 
 
-let projectList = blessed.list({
+let noteGroupListNode = blessed.list({
     parent : screen,
     label: `[ Properties ]`,
     padding : paddingObjectProperties ,
@@ -68,27 +78,30 @@ let projectList = blessed.list({
     width : '20%',
     keys : true,
     vi : true,
-    items : projectItems,
+    items : noteGroupList,
     border : {
-        type : 'line'
+        type : 'line',
+        fg: "yellow"
     },
     style : {
         fg : 'white',
         bg : '#15151b',
-        border : {
-            fg: "blue"
+        label : {
+            fg : 'yellow',
+            bold : true
         },
         selected : {
             fg : 'yellow',
             bg : 'cyan',
             width : '10%'
-        }
+        },
+        focus:focusObjectProperties
     }
 })
 
-let newList = ['having a bath', 'playing games with fellow pals' , 'doing my homework' , 'just brand new item']
+let noteList = ['having a bath', 'playing games with fellow pals' , 'doing my homework' , 'just brand new item']
 
-let brandNewList = blessed.list({
+let noteListNode = blessed.list({
     parent: screen,
     label: `[ Notes ]`,
     padding : paddingObjectProperties,
@@ -99,9 +112,10 @@ let brandNewList = blessed.list({
     keys: true,
     vi : true,
     mouse : true,
-    items : newList,
+    items : noteList,
     border: {
         type: 'line',
+        fg : 'white'
     },
     scrollbar: true,
     style: {
@@ -118,21 +132,10 @@ let brandNewList = blessed.list({
             //bg: 'black',
             //height: '100',
         //},
-        focus: {
-            selected: {
-                bg: 'blue',
-                bold: true,
-            },
-            border: {
-                fg: 'cyan',
-            },
-            label: {
-                fg: 'cyan',
-            },
-        },
         scrollbar: {
             bg: 'blue',
         },
+        focus:focusObjectProperties ,
     },
 })
 
@@ -176,35 +179,31 @@ let noteForm = blessed.form ({
     },
     border: {
         type: 'line',
+        fg: 'green'
     },
     style: {
         label: {
             fg: 'green',
             left: 'center',
             bold: true,
-        },
-        border: {
-            fg: 'green',
         }
     }
 })
 
-let titleBox = blessed.textbox({
+let searchBox = blessed.textbox({
     parent: noteForm,
     inputOnFocus: true,
     keys : true,
     vi : true,
     border: {
         type: 'line',
+        fg: 'green'
     },
     label: ` Content `,
     clickable : true,
     hover : true,
     style: {
         label: {
-            fg: 'green',
-        },
-        border: {
             fg: 'green',
         },
         focus: {
@@ -219,31 +218,52 @@ let titleBox = blessed.textbox({
 })
 
 
-projectList.key ('/' , function(){
-    titleBox.top = '40%'
-    titleBox.height = '6%',
-    titleBox.width = '40%',
-    titleBox.left = 'center'
-    screen.append(titleBox)
-    titleBox.show()
-    titleBox.focus()
+
+//I had to resort to these two 'global' variables ,
+//as sometimes the active pane is another node (other than the two panes) which doesn't meet the subsequent conditionals.
+//Also they could have been defined within a confined function without declaration word , but that would raise a bug in case '/' was pressed before tab after screen load .
+let activePane = noteGroupListNode
+let inActivePane
+function whichPane(paneType){
+    if (noteListNode.focused == true){
+        activePane = noteListNode
+        inActivePane = noteGroupListNode
+    }else if (noteGroupListNode.focused == true) {
+        activePane = noteGroupListNode
+        inActivePane = noteListNode
+    }
+    if (paneType == 'focused'){
+        return (activePane)
+    }else if (paneType == 'notFocused'){
+        return (inActivePane)
+    }
+}
+
+screen.key('/' , function(){
+    searchBox.top = '40%'
+    searchBox.height = '6%',
+    searchBox.width = '40%',
+    searchBox.left = 'center'
+    screen.append(searchBox)
+    searchBox.show()
+    searchBox.focus()
 })
 
-
-
-titleBox.on('update', function(){
-    brandNewList.clearItems()
-    brandNewList.setItems(neoGo(titleBox.value, newList))
-    if (titleBox.value.length == 0 ){
-        brandNewList.setItems(newList)
+searchBox.on('update', function(){
+    currentPane = whichPane('focused')
+    currentPane.clearItems()
+    currentPane.setItems(neoGo(searchBox.value, currentPane.items))
+    if (searchBox.value.length == 0 ){
+        currentPane.setItems(currentPane.items)
         screen.render()
     }
 })
 
-titleBox.key ('enter', function() {
-    titleBox.clearValue()
-    brandNewList.setItems(newList)
-    titleBox.hide()
+searchBox.key ('enter', function() {
+    currentPane = whichPane('focused')
+    searchBox.clearValue()
+    currentPane.setItems(currentPane.items)
+    searchBox.hide()
     screen.render()
 })
 
@@ -253,7 +273,8 @@ let descrBox = blessed.textbox({
     parent : noteForm,
     top : 1,
     border : {
-        type : "line"
+        type : "line",
+        fg : "yellow"
     },
     inputOnFocus : true,
     label : ' description ',
@@ -261,13 +282,10 @@ let descrBox = blessed.textbox({
         label : {
             fg : 'red',
         },
-        border : {
-            fg : "yellow"
-        }
     }
 })
 
-brandNewList.key ("enter",function(){
+noteListNode.key ("enter",function(){
     noteForm.show()
     descrBox.setValue(this.ritems[this.selected])
     descrBox.focus()
@@ -275,18 +293,15 @@ brandNewList.key ("enter",function(){
 })
 
 descrBox.key ("enter" , function(){
-    brandNewList.setItem(brandNewList.selected , descrBox.content)
+    noteListNode.setItem(noteListNode.selected , descrBox.content)
     noteForm.hide()
     screen.render()
 })
 
 
 //These two nodes will listen for the keyboard pressing keyboardEvent , and whichever is currently focused of them will actually get to actually receivethe keyboardEvent .
-projectList.key('tab',function(){
-    brandNewList.focus()
-})
-brandNewList.key('tab',function(){
-    projectList.focus()
+screen.key('tab',function(){
+    whichPane('notFocused').focus()
 })
 
 // Quit on Escape, q, or Control-C.
@@ -301,16 +316,16 @@ screen.key("Q", function(){
 // Append our box to the screen.
 screen.append(box);
 
-screen.append(brandNewList)
+screen.append(noteListNode)
 
 screen.append(noteForm)
 noteForm.hide()
 
-screen.append(projectList)
+screen.append(noteGroupListNode)
 
-//brandNewList.focus()
+//noteListNode.focus()
 
-projectList.focus()
+noteGroupListNode.focus()
 
 // Render the screen.
 screen.render()
