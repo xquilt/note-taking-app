@@ -13,3 +13,5 @@ TODO
         - [ ] interactive usage with vi movement.
         - [ ] /<interactive/> fuzzy searching of the items of the current pane .
         - [ ] Showing a status bar with plethora of useful reachable bits of stats .
+        - [ ] Altering the color scheme for better usability .
+        - [ ] The form elements will need the focusNext() & focusPrevious() methods .

@@ -13,7 +13,8 @@ function neoGo(string , list){
 // Create a screen object.
 let screen = blessed.screen({
     smartCSR : true,
-    title : "Elicit Notes"
+    title : "Elicit Notes",
+    grabKeys : true
 });
 
 // If box is focused, handle `enter`/`return` and give us some more content.
@@ -48,10 +49,20 @@ var box = blessed.box({
 });
 
 
-let projectItems = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
+let paddingObjectProperties = {
+    left : 1,
+    right : 1,
+    top : 1
+}
+
+//let projectItems = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
+let projectItems = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing',"Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
+
 
 let projectList = blessed.list({
     parent : screen,
+    label: `[ Properties ]`,
+    padding : paddingObjectProperties ,
     shadow : false,
     height : '100%',
     width : '20%',
@@ -79,6 +90,8 @@ let newList = ['having a bath', 'playing games with fellow pals' , 'doing my hom
 
 let brandNewList = blessed.list({
     parent: screen,
+    label: `[ Notes ]`,
+    padding : paddingObjectProperties,
     shadow : true,
     left : '20%',
     height : '100%',
@@ -90,7 +103,6 @@ let brandNewList = blessed.list({
     border: {
         type: 'line',
     },
-    label: `[ Notes ]`,
     scrollbar: true,
     style: {
         bg : '#0b0b11',
@@ -206,6 +218,7 @@ let titleBox = blessed.textbox({
     },
 })
 
+
 projectList.key ('/' , function(){
     titleBox.top = '40%'
     titleBox.height = '6%',
@@ -215,6 +228,8 @@ projectList.key ('/' , function(){
     titleBox.show()
     titleBox.focus()
 })
+
+
 
 titleBox.on('update', function(){
     brandNewList.clearItems()
@@ -259,11 +274,19 @@ brandNewList.key ("enter",function(){
     screen.render()
 })
 
-
 descrBox.key ("enter" , function(){
     brandNewList.setItem(brandNewList.selected , descrBox.content)
     noteForm.hide()
     screen.render()
+})
+
+
+//These two nodes will listen for the keyboard pressing keyboardEvent , and whichever is currently focused of them will actually get to actually receivethe keyboardEvent .
+projectList.key('tab',function(){
+    brandNewList.focus()
+})
+brandNewList.key('tab',function(){
+    projectList.focus()
 })
 
 // Quit on Escape, q, or Control-C.
