@@ -1,7 +1,7 @@
 let blessed = require('blessed');
 let fuzzysort = require ('fuzzysort')
 
-function neoGo(string , list){
+function fuzzySortFunc(string , list){
     let matchedItems = fuzzysort.go(string , list)
     let neoMatchedItems = []
     for (let i=0 ; i < matchedItems.length ; i++) {
@@ -239,6 +239,8 @@ function whichPane(paneType){
     }
 }
 
+// Search functionality
+
 screen.key('/' , function(){
     searchBox.top = '40%'
     searchBox.height = '6%',
@@ -249,13 +251,29 @@ screen.key('/' , function(){
     searchBox.focus()
 })
 
+// Return a list of all the list's items string content
+function returnListItems(listObject){
+    let itemsList = []
+    for ( let index= 0 ; index < listObject.items.length ; index++ ){
+       itemsList.push(currentPane.items[index].content)
+    }
+    return(itemsList)
+}
+
 searchBox.on('update', function(){
     currentPane = whichPane('focused')
-    currentPane.clearItems()
-    currentPane.setItems(neoGo(searchBox.value, currentPane.items))
+    //currentPane.clearItems()
+    //currentPane.setItems(fuzzySortFunc(searchBox.value, currentPane.items))
+    //using external fuzzy finder as the bulit-in one is limting. Limiting in the sense it only returns one singl item at a time
+    //console.log(currentPane.fuzzyFind(searchBox.value))
+
+    let fuzziedItems = fuzzySortFunc(searchBox.value , noteList)
+    //console.log(fuzziedItems)
+    currentPane.setItems(fuzziedItems)
+
     if (searchBox.value.length == 0 ){
-        currentPane.setItems(currentPane.items)
-        screen.render()
+        currentPane.clearItems()
+        currentPane.setItems(noteList)
     }
 })
 
@@ -266,7 +284,6 @@ searchBox.key ('enter', function() {
     searchBox.hide()
     screen.render()
 })
-
 
 
 let descrBox = blessed.textbox({
@@ -299,7 +316,7 @@ descrBox.key ("enter" , function(){
 })
 
 
-//These two nodes will listen for the keyboard pressing keyboardEvent , and whichever is currently focused of them will actually get to actually receivethe keyboardEvent .
+//These two nodes will listen for the keyboard pressing keyboardEvent , and whichever is currently focused of them will actually get to actually receive the keyboardEvent .
 screen.key('tab',function(){
     whichPane('notFocused').focus()
 })
