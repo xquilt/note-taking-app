@@ -1,6 +1,16 @@
 let blessed = require('blessed');
 let fuzzysort = require ('fuzzysort')
 
+// Return a list of all the list's items string content
+getNodeListItemsContent = function (NodeListItems){
+    let itemsList = []
+    for ( let i = 0 ; i < NodeListItems.length ; i++ ){
+       itemsList.push(NodeListItems[i].content)
+    }
+    return(itemsList)
+}
+blessed.list.prototype.originalItems = []
+
 function fuzzySortFunc(string , list){
     let matchedItems = fuzzysort.go(string , list)
     let neoMatchedItems = []
@@ -66,8 +76,7 @@ let focusObjectProperties = {
 }
 
 //let noteGroupList = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
-let noteGroupList = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing',"Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music" , "Bills" , "Transportation" , 'Moving' , 'Bathing']
-
+let noteGroupList = ["Gaming", "Programming" , "Homework" , "practicing" , 'Playing' , 'Studying' , "College", "Music", "Bills" , "Transportation" , 'Moving' , 'Bathing' ]
 
 let noteGroupListNode = blessed.list({
     parent : screen,
@@ -251,29 +260,35 @@ screen.key('/' , function(){
     searchBox.focus()
 })
 
-// Return a list of all the list's items string content
-function returnListItems(listObject){
-    let itemsList = []
-    for ( let index= 0 ; index < listObject.items.length ; index++ ){
-       itemsList.push(currentPane.items[index].content)
+function checkOriginalItems(listNode) {
+    if ( listNode.originalItems.length == 0 ){
+        listNode.originalItems = getNodeListItemsContent(listNode.items)
     }
-    return(itemsList)
 }
-
 searchBox.on('update', function(){
     currentPane = whichPane('focused')
-    //currentPane.clearItems()
+    checkOriginalItems(currentPane)
     //currentPane.setItems(fuzzySortFunc(searchBox.value, currentPane.items))
     //using external fuzzy finder as the bulit-in one is limting. Limiting in the sense it only returns one singl item at a time
     //console.log(currentPane.fuzzyFind(searchBox.value))
 
-    let fuzziedItems = fuzzySortFunc(searchBox.value , noteList)
     //console.log(fuzziedItems)
+    
+    //console.log(fuzziedItems)
+    //currentPane.select(fuzziedItems);
+
+    let fuzziedItems = fuzzySortFunc(searchBox.value , activePane.originalItems)
     currentPane.setItems(fuzziedItems)
+    //for (let index = 0; index < currentPane.items.length; index++) {
+    //    let currentListElement = currentPane.items[index]
+    //    if ( fuzziedItems.indexOf(currentPane.items[index].content) == -1 ){
+    //        currentListElement.hide()
+    //    }
+    //}
+    //console.log(currentPane.ritems)
 
     if (searchBox.value.length == 0 ){
-        currentPane.clearItems()
-        currentPane.setItems(noteList)
+        currentPane.setItems(activePane.originalItems)
     }
 })
 
