@@ -1,7 +1,7 @@
 let blessed = require('blessed');
 let fuzzysort = require ('fuzzysort')
 
-// Return a list of all the list's items string content
+// Return a list of all the Node widget list's items string content
 getNodeListItemsContent = function (NodeListItems){
     let itemsList = []
     for ( let i = 0 ; i < NodeListItems.length ; i++ ){
@@ -231,21 +231,19 @@ let searchBox = blessed.textbox({
 //I had to resort to these two 'global' variables ,
 //as sometimes the active pane is another node (other than the two panes) which doesn't meet the subsequent conditionals.
 //Also they could have been defined within a confined function without declaration word , but that would raise a bug in case '/' was pressed before tab after screen load .
-let activePane = noteGroupListNode
-let inActivePane
-function whichPane(paneType){
-    if (noteListNode.focused == true){
-        activePane = noteListNode
-        inActivePane = noteGroupListNode
-    }else if (noteGroupListNode.focused == true) {
-        activePane = noteGroupListNode
-        inActivePane = noteListNode
+
+function currentPaneFunc(paneIsFocused){
+    const panesList = [noteListNode, noteGroupListNode]
+    let returnPane
+    for (let index = 0; index < panesList.length; index++) {
+        let currentPane = panesList[index]
+        if ( currentPane.focused  && paneIsFocused ){
+            returnPane = currentPane 
+        }else if ( !paneIsFocused && !currentPane.focused ){
+            returnPane = currentPane
+        }
     }
-    if (paneType == 'focused'){
-        return (activePane)
-    }else if (paneType == 'notFocused'){
-        return (inActivePane)
-    }
+    return (returnPane)
 }
 
 // Search functionality
@@ -260,40 +258,26 @@ screen.key('/' , function(){
     searchBox.focus()
 })
 
+// The usage/call of function is mostly confined within List widget's fuzzy finding events
+// It replicates the items' list ONLY when fuzzy finding is about to ignite
 function checkOriginalItems(listNode) {
     if ( listNode.originalItems.length == 0 ){
         listNode.originalItems = getNodeListItemsContent(listNode.items)
     }
 }
+
 searchBox.on('update', function(){
-    currentPane = whichPane('focused')
+    currentPane = currentPaneFunc(true)
     checkOriginalItems(currentPane)
-    //currentPane.setItems(fuzzySortFunc(searchBox.value, currentPane.items))
-    //using external fuzzy finder as the bulit-in one is limting. Limiting in the sense it only returns one singl item at a time
-    //console.log(currentPane.fuzzyFind(searchBox.value))
-
-    //console.log(fuzziedItems)
-    
-    //console.log(fuzziedItems)
-    //currentPane.select(fuzziedItems);
-
-    let fuzziedItems = fuzzySortFunc(searchBox.value , activePane.originalItems)
-    currentPane.setItems(fuzziedItems)
-    //for (let index = 0; index < currentPane.items.length; index++) {
-    //    let currentListElement = currentPane.items[index]
-    //    if ( fuzziedItems.indexOf(currentPane.items[index].content) == -1 ){
-    //        currentListElement.hide()
-    //    }
-    //}
-    //console.log(currentPane.ritems)
-
-    if (searchBox.value.length == 0 ){
-        currentPane.setItems(activePane.originalItems)
+    if (searchBox.value.length != 0 ){
+        currentPane.setItems(fuzzySortFunc(searchBox.value , currentPane.originalItems))
+    }else{
+        currentPane.setItems(currentPane.originalItems)
     }
 })
 
 searchBox.key ('enter', function() {
-    currentPane = whichPane('focused')
+    currentPane = currentPaneFunc(true)
     searchBox.clearValue()
     currentPane.setItems(currentPane.items)
     searchBox.hide()
@@ -333,17 +317,12 @@ descrBox.key ("enter" , function(){
 
 //These two nodes will listen for the keyboard pressing keyboardEvent , and whichever is currently focused of them will actually get to actually receive the keyboardEvent .
 screen.key('tab',function(){
-    whichPane('notFocused').focus()
+    currentPaneFunc(false).focus()
 })
 
 // Quit on Escape, q, or Control-C.
-screen.key(['escape', 'q', 'C-c'], function(ch, key) {
-    return process.exit(0);
+screen.key(['escape', 'q', 'C-c'], function() {
 });
-
-screen.key("Q", function(){
-    this.destroy()
-})
 
 // Append our box to the screen.
 screen.append(box);
