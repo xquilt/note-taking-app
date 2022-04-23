@@ -1,15 +1,31 @@
 let blessed = require('blessed');
 let fuzzysort = require ('fuzzysort')
+let fs = require('fs')
+
+// This global variable preserves the last focused 'note'/'note group' pane, before search box being focused.
+let previousFocusedPane
 
 // Return a list of all the Node widget list's items string content
-getNodeListItemsContent = function (NodeListItems){
+function getNodeListItemsContent(NodeListItems){
     let itemsList = []
-    for ( let i = 0 ; i < NodeListItems.length ; i++ ){
+    for ( let i = 0; i < NodeListItems.length; i++ ){
        itemsList.push(NodeListItems[i].content)
     }
     return(itemsList)
 }
+
+/*
+ * -Purpose
+ *      -When you're about to fuzzy find an object's list of items
+ *          -These items gets altered in place (the object's items list get changed with the new fuzzed result)
+ *              -This function essentially makes an original copy of the original object's items list
+*/
 blessed.list.prototype.originalItems = []
+function checkOriginalItems(listNode) {
+    if ( (listNode == undefined) || (listNode.originalItems.length == 0) ) {
+        listNode.originalItems = getNodeListItemsContent(listNode.items)
+    }
+}
 
 function fuzzySortFunc(string , list){
     let matchedItems = fuzzysort.go(string , list)
@@ -35,7 +51,6 @@ let screen = blessed.screen({
   //screen.render();
 //});
 
-
 // The main parent box
 var box = blessed.box({
     top: 'center',
@@ -56,12 +71,12 @@ var box = blessed.box({
     },
 });
 
-
 let paddingObjectProperties = {
     left : 1,
     right : 1,
     top : 1
 }
+
 let focusObjectProperties = {
     selected: {
         bg: 'blue',
@@ -108,7 +123,7 @@ let noteGroupListNode = blessed.list({
     }
 })
 
-let noteList = ['having a bath', 'playing games with fellow pals' , 'doing my homework' , 'just brand new item']
+let noteList = ['having a bath', 'playing games with fellow pals' , 'doing my homework' , 'just brand new item', 'Just jogging with others', 'Aiding my friends with their homework', 'commuting all the way to the college', 'checking out all my fellow friends', 'Traversing through the jungle of madisom and what not']
 
 let noteListNode = blessed.list({
     parent: screen,
@@ -226,18 +241,22 @@ let searchBox = blessed.textbox({
     },
 })
 
+/*
+ * -Purpose
+ *      -Return the 'focused' or 'unfocused' pane
+ * -Notes
+ *     -I had to resort to these two array item 'global' variables
+ *          -As sometimes the active pane is another node (other than the two panes) which doesn't meet the subsequent conditionals.
+ *          -they could have been defined within a confined function without the declaration word
+ *              -but that would raise a bug in case '/' was pressed before tab after screen load .
+*/
 
-
-//I had to resort to these two 'global' variables ,
-//as sometimes the active pane is another node (other than the two panes) which doesn't meet the subsequent conditionals.
-//Also they could have been defined within a confined function without declaration word , but that would raise a bug in case '/' was pressed before tab after screen load .
-
-function currentPaneFunc(paneIsFocused){
-    const panesList = [noteListNode, noteGroupListNode]
+function returnCurrentPane(paneIsFocused){
+    const paneList = [noteGroupListNode, noteListNode]
     let returnPane
-    for (let index = 0; index < panesList.length; index++) {
-        let currentPane = panesList[index]
-        if ( currentPane.focused  && paneIsFocused ){
+    for (let index = 0; index < paneList.length; index++) {
+        let currentPane = paneList[index]
+        if ( paneIsFocused && currentPane.focused ){
             returnPane = currentPane 
         }else if ( !paneIsFocused && !currentPane.focused ){
             returnPane = currentPane
@@ -255,19 +274,25 @@ screen.key('/' , function(){
     searchBox.left = 'center'
     screen.append(searchBox)
     searchBox.show()
+    previousFocusedPane = returnCurrentPane(true)
     searchBox.focus()
 })
 
-// The usage/call of function is mostly confined within List widget's fuzzy finding events
-// It replicates the items' list ONLY when fuzzy finding is about to ignite
-function checkOriginalItems(listNode) {
-    if ( listNode.originalItems.length == 0 ){
-        listNode.originalItems = getNodeListItemsContent(listNode.items)
-    }
-}
+/*
+ * -A current error
+ *      -When you're about to type and filter in real time
+ *          -The current 'focused' pane become the search box
+ *              -As you rely on the current 'focused' pane at the function.
+ *                  -you essentially get the 'search box' instead (as the object)
+ *
+ *                  -So far i've added an inadequate patch
+ *                      -Initialized a global variable
+ *                      -This variable gets updated with the current active pane right before the search box is initialized & lose focus
+*/
 
 searchBox.on('update', function(){
-    currentPane = currentPaneFunc(true)
+    // currentPane = returnCurrentPane(true)
+    currentPane = previousFocusedPane
     checkOriginalItems(currentPane)
     if (searchBox.value.length != 0 ){
         currentPane.setItems(fuzzySortFunc(searchBox.value , currentPane.originalItems))
@@ -277,7 +302,7 @@ searchBox.on('update', function(){
 })
 
 searchBox.key ('enter', function() {
-    currentPane = currentPaneFunc(true)
+    currentPane = returnCurrentPane(true)
     searchBox.clearValue()
     currentPane.setItems(currentPane.items)
     searchBox.hide()
@@ -315,13 +340,21 @@ descrBox.key ("enter" , function(){
 })
 
 
-//These two nodes will listen for the keyboard pressing keyboardEvent , and whichever is currently focused of them will actually get to actually receive the keyboardEvent .
-screen.key('tab',function(){
-    currentPaneFunc(false).focus()
+// These two nodes will listen for the keyboard pressing keyboardEvent , and whichever is currently focused of them will actually get to actually receive the keyboardEvent .
+/*
+ * This 'event handler' works by intercepting the tab key. 
+ *  -Call the function
+ *      -The function will loop through the pane list
+ *          -Will continue looping till it meets a focused pane
+ *              -Only then will return the right-adjacent unfocused pane i.e. focused pane + 1
+*/
+screen.key('tab', function(){
+    returnCurrentPane(false).focus()
 })
 
 // Quit on Escape, q, or Control-C.
-screen.key(['escape', 'q', 'C-c'], function() {
+item.key(['escape', 'q', 'C-c'], function() {
+   screen.destroy() 
 });
 
 // Append our box to the screen.
@@ -334,7 +367,7 @@ noteForm.hide()
 
 screen.append(noteGroupListNode)
 
-//noteListNode.focus()
+// noteListNode.focus()
 
 noteGroupListNode.focus()
 
